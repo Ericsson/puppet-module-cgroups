@@ -21,9 +21,10 @@ class cgroups (
         $default_package_name = 'libcgroup1'
         $default_cgconfig_mount = '/sys/fs/cgroup'
         if $user_path_fix {
-          file { "$user_path_fix":
-            ensure => directory,
-            mode   => 0777,
+          file { 'path_fix':
+            path    => $user_path_fix,
+            ensure  => directory,
+            mode    => 0777,
             require => Service['cgconfig_service'],
           }
         }
