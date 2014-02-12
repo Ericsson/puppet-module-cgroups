@@ -9,22 +9,24 @@ class cgroups (
   $user_path_fix    = undef,
 ) {
 
-  validate_array( $cgconfig_content )
+  validate_array($cgconfig_content)
 
   case $::osfamily {
     'RedHat': {
-      $default_package_name = 'libcgroup'
-      $default_cgconfig_mount   = '/cgroup'
+      $default_package_name   = 'libcgroup'
+      $default_cgconfig_mount = '/cgroup'
     }
     'Suse': {
       if $::operatingsystemrelease == '11.2' {
-        $default_package_name = 'libcgroup1'
+
+        $default_package_name   = 'libcgroup1'
         $default_cgconfig_mount = '/sys/fs/cgroup'
+
         if $user_path_fix {
           file { 'path_fix':
-            path    => $user_path_fix,
             ensure  => directory,
-            mode    => 0777,
+            path    => $user_path_fix,
+            mode    => '0777',
             require => Service['cgconfig_service'],
           }
         }
@@ -34,7 +36,7 @@ class cgroups (
       }
     }
     default: {
-      fail( "cgroups is not supported on this platform")
+      fail('cgroups is not supported on this platform')
     }
   }
 
@@ -51,22 +53,21 @@ class cgroups (
   }
 
   package { $real_package_name:
-    ensure   => installed,
+    ensure => installed,
   }
 
   file { 'cg_conf':
     ensure  => file,
-    notify  => Service["cgconfig_service"],
+    notify  => Service['cgconfig_service'],
     path    => $config_file_path,
     content => template('cgroups/cgroup.conf.erb'),
-    require => Package[ $real_package_name ],
+    require => Package[$real_package_name],
   }
 
   service { 'cgconfig_service':
     ensure  => running,
     enable  => true,
-    name   => $service_name,
-    require => Package[ $real_package_name ],
+    name    => $service_name,
+    require => Package[$real_package_name],
   }
-
 }
