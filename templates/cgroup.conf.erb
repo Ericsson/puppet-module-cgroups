@@ -1,8 +1,8 @@
+# This file is being maintained by Puppet.
+# DO NOT EDIT
+
 mount {
   cpu = <%= @real_cgconfig_mount %>;
 }
 
-<% @cgconfig_content.each do |line| -%>
-  <%= line %>
-<% end -%>
-
+<%= @cgconfig_content -%>

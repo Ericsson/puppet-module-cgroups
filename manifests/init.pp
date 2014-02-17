@@ -3,36 +3,47 @@
 class cgroups (
   $config_file_path = '/etc/cgconfig.conf',
   $service_name     = 'cgconfig',
-  $package_name     = 'DEFAULT',
-  $cgconfig_mount   = 'DEFAULT',
+  $package_name     = 'USE_DEFAULTS',
+  $cgconfig_mount   = 'USE_DEFAULTS',
   $cgconfig_content = undef,
-  $user_path_fix    = undef,
+  $user_path_fix    = false,
 ) {
-
-  validate_array($cgconfig_content)
 
   case $::osfamily {
     'RedHat': {
-      $default_package_name   = 'libcgroup'
-      $default_cgconfig_mount = '/cgroup'
-    }
-    'Suse': {
-      if $::operatingsystemrelease == '11.2' {
-
-        $default_package_name   = 'libcgroup1'
-        $default_cgconfig_mount = '/sys/fs/cgroup'
-
-        if $user_path_fix {
-          file { 'path_fix':
-            ensure  => directory,
-            path    => $user_path_fix,
-            mode    => '0777',
-            require => Service['cgconfig_service'],
-          }
+      case $::operatingsystemmajrelease {
+        '6': {
+          $default_package_name   = 'libcgroup'
+          $default_cgconfig_mount = '/cgroup'
+        }
+        default: {
+          fail('cgroups is only supported on RHEL 6')
         }
       }
-      else {
-        fail('cgroups is only supported on Suse 11.2')
+    }
+    'Suse': {
+      case $::operatingsystemmajrelease {
+        '11': {
+          if versioncmp($::operatingsystemrelease, '11.2') > -1 {
+            $default_package_name   = 'libcgroup1'
+            $default_cgconfig_mount = '/sys/fs/cgroup'
+
+            if $user_path_fix {
+              file { 'path_fix':
+                ensure  => directory,
+                path    => $user_path_fix,
+                mode    => '0775',
+                require => Service['cgconfig_service'],
+              }
+            }
+          }
+          else {
+            fail('cgroups is only supported on Suse 11.2 and upward')
+          }
+        }
+        default: {
+          fail('cgroups is only supported on Suse 11 (11.2 and up')
+        }
       }
     }
     default: {
@@ -40,20 +51,20 @@ class cgroups (
     }
   }
 
-  if $package_name == 'DEFAULT' {
+  if $package_name == 'USE_DEFAULTS' {
     $real_package_name = $default_package_name
   } else {
     $real_package_name = $package_name
   }
 
-  if $cgconfig_mount == 'DEFAULT' {
+  if $cgconfig_mount == 'USE_DEFAULTS' {
     $real_cgconfig_mount = $default_cgconfig_mount
   } else {
     $real_cgconfig_mount = $cgconfig_mount
   }
 
   package { $real_package_name:
-    ensure => installed,
+    ensure => present,
   }
 
   file { 'cg_conf':
