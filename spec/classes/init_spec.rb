@@ -85,7 +85,7 @@ mount {
       let(:facts) do
         { :osfamily                   => 'Suse',
           :operatingsystemrelease     => '11.2',
-          :operatingsystemmajrelease  => '11',
+          :lsbmajdistrelease  => '11',
         }
       end
 
@@ -133,7 +133,7 @@ mount {
       let(:facts) do
         { :osfamily               => 'Suse',
           :operatingsystemrelease => '11.1',
-          :operatingsystemmajrelease  => '11',
+          :lsbmajdistrelease  => '11',
         }
       end
 
@@ -148,7 +148,7 @@ mount {
       let(:facts) do
         { :osfamily               => 'Suse',
           :operatingsystemrelease => '11.3',
-          :operatingsystemmajrelease  => '11',
+          :lsbmajdistrelease  => '11',
         }
       end
 
@@ -258,7 +258,7 @@ kalle is king hallelulja})
       let(:facts) do
         { :osfamily               => 'Suse',
           :operatingsystemrelease => '11.2',
-          :operatingsystemmajrelease  => '11',
+          :lsbmajdistrelease  => '11',
         }
       end
 
@@ -284,7 +284,7 @@ kalle is king hallelulja})
       let(:facts) do
         { :osfamily               => 'Suse',
           :operatingsystemrelease => '11.1',
-          :operatingsystemmajrelease  => '11',
+          :lsbmajdistrelease  => '11',
         }
       end
 
@@ -300,7 +300,7 @@ kalle is king hallelulja})
       let(:facts) do
         { :osfamily               => 'Suse',
           :operatingsystemrelease => '12.1',
-          :operatingsystemmajrelease  => '11',
+          :lsbmajdistrelease  => '11',
         }
       end
 
@@ -377,7 +377,7 @@ kalle is king hallelulja})
       let(:facts) do
         { :osfamily               => 'Suse',
           :operatingsystemrelease => '11.1',
-          :operatingsystemmajrelease  => '11',
+          :lsbmajdistrelease  => '11',
         }
       end
 
@@ -394,7 +394,7 @@ kalle is king hallelulja})
       let(:facts) do
         { :osfamily               => 'Suse',
           :operatingsystemrelease => '11.4',
-          :operatingsystemmajrelease  => '11',
+          :lsbmajdistrelease  => '11',
         }
       it { should compile.with_all_deps }
       it {
@@ -413,7 +413,7 @@ kalle is king hallelulja})
       let(:facts) do
         { :osfamily               => 'Suse',
           :operatingsystemrelease => '11.2',
-          :operatingsystemmajrelease  => '11',
+          :lsbmajdistrelease  => '11',
         }
       end
 
