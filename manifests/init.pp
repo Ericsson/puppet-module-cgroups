@@ -67,9 +67,7 @@ class cgroups (
     $real_cgconfig_mount = $cgconfig_mount
   }
 
-  validate_string($real_package_name)
-
-  validate_string($real_cgconfig_mount)
+  validate_absolute_path($real_cgconfig_mount)
 
   package { $real_package_name:
     ensure => present,
