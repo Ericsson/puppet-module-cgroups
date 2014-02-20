@@ -9,6 +9,7 @@ class cgroups (
   $user_path_fix    = false,
 ) {
 
+
   case $::osfamily {
     'RedHat': {
       case $::operatingsystemmajrelease {
@@ -29,6 +30,7 @@ class cgroups (
             $default_cgconfig_mount = '/sys/fs/cgroup'
 
             if $user_path_fix {
+              validate_absolute_path($user_path_fix)
               file { 'path_fix':
                 ensure  => directory,
                 path    => $user_path_fix,
@@ -62,6 +64,10 @@ class cgroups (
   } else {
     $real_cgconfig_mount = $cgconfig_mount
   }
+
+  validate_string($real_package_name)
+
+  validate_string($real_cgconfig_mount)
 
   package { $real_package_name:
     ensure => present,

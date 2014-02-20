@@ -52,45 +52,23 @@ A path to set 0777 permissions on. This is a fix for Suse that have a bug in set
 
 - *Default*: ''
 
-# non-heira example with suse 11.2 bugfix#
+# example with suse 11.2 bugfix for permissions#
 
 <pre>
-class {'cgroups':
-    cgconfig_content => [ 'group user/mgw-all {',
-                          ' perm {',
-                          '  task {',
-                          '    uid = root;',
-                          '    gid = mgw-all;',
-                          '  } admin {',
-                          '    uid = root;',
-                          '    gid = mgw-all;',
-                          '  }',
-                          ' } cpu {',
-                          ' }',
-                          '}',
-    ],
-    user_path_fix => '/sys/fs/cgroup/user/mgw-all'
+cgroups::user_path_fix: '/sys/fs/cgroup/user/mgw-all'
+cgroups::cgconfig_content: |
+
+  group user/mgw-all {
+    perm {
+      task {
+        uid = root;
+        gid = mgw-all;
+      } admin {
+        uid = root;
+        gid = mgw-all;
+      }
+    }
+    cpu {
+    }
   }
 </pre>
-
-# non-heira example#
-
-<pre>
-class {'cgroups':
-    cgconfig_content => [ 'group user/mgw-all {',
-                          ' perm {',
-                          '  task {',
-                          '    uid = root;',
-                          '    gid = mgw-all;',
-                          '  } admin {',
-                          '    uid = root;',
-                          '    gid = mgw-all;',
-                          '  }',
-                          ' } cpu {',
-                          ' }',
-                          '}',
-    ],
-  }
-</pre>
-
-
