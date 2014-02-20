@@ -9,6 +9,8 @@ class cgroups (
   $user_path_fix    = false,
 ) {
 
+  validate_string($cgconfig_content)
+  validate_string($service_name)
 
   case $::osfamily {
     'RedHat': {
