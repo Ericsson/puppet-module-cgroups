@@ -1,0 +1,22 @@
+group <%= @name %> {
+<% unless @permissions.empty? -%>
+  perm {
+<%   @permissions.each do |type, params| -%>
+    <%= type %>  {
+<%     params.each do |p,v| -%>
+      <%= p %> = <%= v %>;
+<%     end -%>
+    }
+<%  end  -%>
+  }
+<% end -%>
+
+<% @controllers.each do |controller, params| -%>
+  <%= controller %> {
+<%   params.each do |p,v| -%>
+    <%= p %> = <%= v %>;
+<%   end -%>
+  }
+<% end -%>
+
+}

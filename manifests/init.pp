@@ -2,11 +2,13 @@
 #
 class cgroups (
   $config_file_path = '/etc/cgconfig.conf',
+  $config_d_path    = '/etc/cgconfig.d',
   $service_name     = 'cgconfig',
-  $package_name     = 'USE_DEFAULTS',
-  $cgconfig_mount   = 'USE_DEFAULTS',
+  $package_name     = undef,
   $cgconfig_content = undef,
   $user_path_fix    = false,
+  $mounts           = {},
+  $groups           = {},
 ) {
 
   validate_absolute_path($config_file_path)
@@ -21,15 +23,8 @@ class cgroups (
 
   case $::osfamily {
     'RedHat': {
-      case $::operatingsystemmajrelease {
-        '6': {
-          $default_package_name   = 'libcgroup'
-          $default_cgconfig_mount = '/cgroup'
-        }
-        default: {
-          fail('cgroups is only supported on EL 6.')
-        }
-      }
+      $default_package_name   = 'libcgroup'
+      $default_cgconfig_mount = '/cgroup'
     }
     'Suse': {
       case $::lsbmajdistrelease {
@@ -43,7 +38,7 @@ class cgroups (
                 ensure  => directory,
                 path    => $user_path_fix,
                 mode    => '0775',
-                require => Service['cgconfig_service'],
+                require => Service[$service_name],
               }
             }
           }
@@ -61,35 +56,28 @@ class cgroups (
     }
   }
 
-  if $package_name == 'USE_DEFAULTS' {
-    $package_name_real = $default_package_name
-  } else {
-    $package_name_real = $package_name
+  $package_name_real = $package_name ? {
+    undef   => $default_package_name,
+    default => $package_name,
   }
 
-  if $cgconfig_mount == 'USE_DEFAULTS' {
-    $cgconfig_mount_real = $default_cgconfig_mount
-  } else {
-    $cgconfig_mount_real = $cgconfig_mount
-  }
-  validate_absolute_path($cgconfig_mount_real)
+
+  create_resources('cgroups::group', $groups)
 
   package { $package_name_real:
     ensure => present,
   }
 
-  file { 'cg_conf':
+  file { $config_file_path:
     ensure  => file,
-    notify  => Service['cgconfig_service'],
-    path    => $config_file_path,
+    notify  => Service[$service_name],
     content => template('cgroups/cgroup.conf.erb'),
     require => Package[$package_name_real],
   }
 
-  service { 'cgconfig_service':
+  service { $service_name:
     ensure  => running,
     enable  => true,
-    name    => $service_name,
     require => Package[$package_name_real],
   }
 }
