@@ -27,8 +27,15 @@ class cgroups (
 
   case $::osfamily {
     'RedHat': {
-      $default_package_name   = 'libcgroup'
-      $default_cgconfig_mount = '/cgroup'
+      case $::operatingsystemmajrelease {
+        '6','7': {
+          $default_package_name   = 'libcgroup'
+          $default_cgconfig_mount = '/cgroup'
+        }
+        default: {
+          fail('cgroups is only supported on EL 6 and 7.')
+        }
+      }
     }
     'Suse': {
       case $::lsbmajdistrelease {

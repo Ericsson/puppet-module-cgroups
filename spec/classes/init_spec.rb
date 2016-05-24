@@ -46,6 +46,22 @@ describe 'cgroups' do
 
     end
 
+    ['5','8'].each do |release|
+      context "on EL #{release}" do
+        let(:facts) do
+          { :osfamily                  => 'RedHat',
+            :operatingsystemrelease    => "#{release}.0",
+            :operatingsystemmajrelease => release,
+          }
+        end
+
+        it 'should fail' do
+          expect {
+            should contain_class('cgroups')
+          }.to raise_error(Puppet::Error,/cgroups is only supported on EL 6 and 7./)
+        end
+      end
+    end
 
     context 'on Suse 11.2' do
       let(:facts) do
