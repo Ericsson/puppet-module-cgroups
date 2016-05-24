@@ -20,19 +20,16 @@ describe 'cgroups' do
       }
 
       it {
-        should contain_file('cg_conf').with({
+        should contain_file('/etc/cgconfig.conf').with({
           'ensure'  => 'file',
           'path'    => '/etc/cgconfig.conf',
-          'notify'  => 'Service[cgconfig_service]',
+          'notify'  => 'Service[cgconfig]',
           'require' => 'Package[libcgroup]',
         })
-        should contain_file('cg_conf').with_content(
+        should contain_file('/etc/cgconfig.conf').with_content(
 %{# This file is being maintained by Puppet.
 # DO NOT EDIT
 
-mount {
-  cpu = /cgroup;
-}
 
 })
       }
@@ -40,17 +37,16 @@ mount {
       it { should_not contain_file('cgroups_path_fix') }
 
       it {
-        should contain_service('cgconfig_service').with({
+        should contain_service('cgconfig').with({
           'ensure'  => 'running',
           'enable'  => 'true',
-          'name'    => 'cgconfig',
           'require' => 'Package[libcgroup]',
         })
       }
 
     end
 
-    ['5','7'].each do |release|
+    ['5','8'].each do |release|
       context "on EL #{release}" do
         let(:facts) do
           { :osfamily                  => 'RedHat',
@@ -62,7 +58,7 @@ mount {
         it 'should fail' do
           expect {
             should contain_class('cgroups')
-          }.to raise_error(Puppet::Error,/cgroups is only supported on EL 6./)
+          }.to raise_error(Puppet::Error,/cgroups is only supported on EL 6 and 7./)
         end
       end
     end
@@ -86,30 +82,20 @@ mount {
       }
 
       it {
-        should contain_file('cg_conf').with({
+        should contain_file('/etc/cgconfig.conf').with({
           'ensure'  => 'file',
           'path'    => '/etc/cgconfig.conf',
-          'notify'  => 'Service[cgconfig_service]',
+          'notify'  => 'Service[cgconfig]',
           'require' => 'Package[libcgroup1]',
         })
-        should contain_file('cg_conf').with_content(
-%{# This file is being maintained by Puppet.
-# DO NOT EDIT
-
-mount {
-  cpu = /sys/fs/cgroup;
-}
-
-})
       }
 
       it { should_not contain_file('cgroups_path_fix') }
 
       it {
-        should contain_service('cgconfig_service').with({
+        should contain_service('cgconfig').with({
           'ensure'  => 'running',
           'enable'    => 'true',
-          'name'  => 'cgconfig',
           'require' => 'Package[libcgroup1]',
         })
       }
@@ -149,30 +135,20 @@ mount {
       }
 
       it {
-        should contain_file('cg_conf').with({
+        should contain_file('/etc/cgconfig.conf').with({
           'ensure'  => 'file',
           'path'    => '/etc/cgconfig.conf',
-          'notify'  => 'Service[cgconfig_service]',
+          'notify'  => 'Service[cgconfig]',
           'require' => 'Package[libcgroup1]',
         })
-        should contain_file('cg_conf').with_content(
-%{# This file is being maintained by Puppet.
-# DO NOT EDIT
-
-mount {
-  cpu = /sys/fs/cgroup;
-}
-
-})
       }
 
       it { should_not contain_file('cgroups_path_fix') }
 
       it {
-        should contain_service('cgconfig_service').with({
+        should contain_service('cgconfig').with({
           'ensure'  => 'running',
           'enable'    => 'true',
-          'name'  => 'cgconfig',
           'require' => 'Package[libcgroup1]',
         })
       }
@@ -191,23 +167,17 @@ mount {
 
       it { should compile.with_all_deps }
 
-      it {
-        should contain_file('cg_conf').with_content(
-%{# This file is being maintained by Puppet.
-# DO NOT EDIT
-
-mount {
-  cpu = /cgroup;
-}
-
-kalle is king hallelulja})
-      }
 
       it { should_not contain_file('cgroups_path_fix') }
     end
 
     context 'On Suse 11.2' do
-      let(:params) { { :cgconfig_content => 'kalle is king hallelulja' } }
+      let(:params) { 
+        { 
+          :cgconfig_content => 'kalle is king hallelulja',
+          :mounts => { 'cpu' => '/sys/fs/cgroup' }
+        } 
+      }
       let(:facts) do
         { :osfamily               => 'Suse',
           :operatingsystemrelease => '11.2',
@@ -218,7 +188,7 @@ kalle is king hallelulja})
       it { should compile.with_all_deps }
 
       it {
-        should contain_file('cg_conf').with_content(
+        should contain_file('/etc/cgconfig.conf').with_content(
 %{# This file is being maintained by Puppet.
 # DO NOT EDIT
 
@@ -245,13 +215,10 @@ kalle is king hallelulja})
       it { should compile.with_all_deps }
 
       it {
-        should contain_file('cg_conf').with_content(
+        should contain_file('/etc/cgconfig.conf').with_content(
 %{# This file is being maintained by Puppet.
 # DO NOT EDIT
 
-mount {
-  cpu = /sys/fs/cgroup;
-}
 
 kalle is king hallelulja})
       }
@@ -291,7 +258,7 @@ kalle is king hallelulja})
         'ensure'  => 'directory',
         'path'    => '/kalle',
         'mode'    => '0775',
-        'require' => 'Service[cgconfig_service]',
+        'require' => 'Service[cgconfig]',
         })
       }
     end
@@ -309,10 +276,9 @@ kalle is king hallelulja})
       it { should compile.with_all_deps }
 
       it {
-        should contain_file('cg_conf').with({
+        should contain_file('/usr/local/etc/cgconfig.conf').with({
           'ensure'  => 'file',
-          'path'    => '/usr/local/etc/cgconfig.conf',
-          'notify'  => 'Service[cgconfig_service]',
+          'notify'  => 'Service[cgconfig]',
           'require' => 'Package[libcgroup]',
         })
       }
@@ -346,10 +312,9 @@ kalle is king hallelulja})
       it { should compile.with_all_deps }
 
       it {
-        should contain_service('cgconfig_service').with({
+        should contain_service('mycgconfig').with({
           'ensure'  => 'running',
           'enable'  => 'true',
-          'name'    => 'mycgconfig',
           'require' => 'Package[libcgroup]',
         })
       }
@@ -389,13 +354,13 @@ kalle is king hallelulja})
       }
 
       it {
-        should contain_file('cg_conf').with({
+        should contain_file('/etc/cgconfig.conf').with({
           'require' => 'Package[mylibcgroup]',
         })
       }
 
       it {
-        should contain_service('cgconfig_service').with({
+        should contain_service('cgconfig').with({
           'require' => 'Package[mylibcgroup]',
         })
       }
@@ -424,13 +389,13 @@ kalle is king hallelulja})
       }
 
       it {
-        should contain_file('cg_conf').with({
+        should contain_file('/etc/cgconfig.conf').with({
           'require' => [ 'Package[cgrouptools]', 'Package[libcgroup]' ],
         })
       }
 
       it {
-        should contain_service('cgconfig_service').with({
+        should contain_service('cgconfig').with({
           'require' => [ 'Package[cgrouptools]', 'Package[libcgroup]' ],
         })
       }
@@ -448,35 +413,6 @@ kalle is king hallelulja})
         expect {
           should contain_class('cgroups')
         }.to raise_error(Puppet::Error,/cgroups::package_name must be a string or an array./)
-      end
-    end
-  end
-
-  describe 'with cgconfig_mount parameter specified' do
-    context 'as a valid path' do
-      let(:params) { { :cgconfig_mount => '/tmp/cgroup' } }
-      let(:facts) do
-        { :osfamily                  => 'RedHat',
-          :operatingsystemmajrelease => '6',
-        }
-      end
-
-      it { should compile.with_all_deps }
-
-    end
-
-    context 'as an invalid path' do
-      let(:params) { { :cgconfig_mount => 'invalid/path' } }
-      let(:facts) do
-        { :osfamily                  => 'RedHat',
-          :operatingsystemmajrelease => '6',
-        }
-      end
-
-      it 'should fail' do
-        expect {
-          should contain_class('cgroups')
-        }.to raise_error(Puppet::Error)
       end
     end
   end
