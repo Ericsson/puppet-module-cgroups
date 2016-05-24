@@ -3,7 +3,7 @@ require 'spec_helper'
 
 describe 'cgroups::group' do
   
-  let (:title) { 'user_mgw-all' }
+  let (:title) { 'user/mgw-all' }
   let(:facts) do
     { :osfamily                  => 'RedHat',
       :operatingsystemrelease    => '7.1',
@@ -32,11 +32,11 @@ describe 'cgroups::group' do
     }}
 
     it do
-      should contain_file('/etc/cgconfig.d/user_mgw-all.conf').with({
+      should contain_file('/etc/cgconfig.d/user-mgw-all.conf').with({
         'notify' => 'Service[cgconfig]'
       })
-      should contain_file('/etc/cgconfig.d/user_mgw-all.conf').with_content(
-%{group user_mgw-all {
+      should contain_file('/etc/cgconfig.d/user-mgw-all.conf').with_content(
+%{group user/mgw-all {
   perm {
     task  {
       uid = root;

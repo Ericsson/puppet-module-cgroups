@@ -6,6 +6,8 @@ define cgroups::group (
 
 
 
+  $fscompat_name = regsubst($name, '\/', '-')
+
   validate_hash($permissions)
   validate_hash($controllers)
 
@@ -14,7 +16,7 @@ define cgroups::group (
   if $target {
     $target_real = $target
   } else {
-    $target_real = "${::cgroups::config_d_path}/${name}.conf"
+    $target_real = "${::cgroups::config_d_path}/${fscompat_name}.conf"
   }
 
   validate_absolute_path($target_real)
