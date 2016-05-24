@@ -26,8 +26,8 @@ doc/
 
 # Puppet
 coverage/
-spec/fixtures/modules/*
 spec/fixtures/manifests/*
+spec/fixtures/modules/*
 Gemfile.lock
 
 # Geppetto
