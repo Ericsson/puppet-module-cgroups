@@ -6,6 +6,9 @@ define cgroups::group (
 
 
 
+  validate_hash($permissions)
+  validate_hash($controllers)
+
   include ::cgroups
   
   if $target {
@@ -13,6 +16,8 @@ define cgroups::group (
   } else {
     $target_real = "${::cgroups::config_d_path}/${name}.conf"
   }
+
+  validate_absolute_path($target_real)
 
   file { $target_real:
     ensure  => file,

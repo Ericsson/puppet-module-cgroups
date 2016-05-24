@@ -21,6 +21,10 @@ class cgroups (
     fail('cgroups::package_name must be a string or an array.')
   }
 
+  validate_hash($mounts)
+  validate_hash($groups)
+
+
   case $::osfamily {
     'RedHat': {
       $default_package_name   = 'libcgroup'
