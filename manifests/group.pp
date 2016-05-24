@@ -6,10 +6,7 @@ define cgroups::group (
 
 
 
-  if (!defined(Class['cgroups'])) {
-    fail('Must include cgroups module before declaring cgroups::group resources')
-  }
-
+  include ::cgroups
   
   if $target {
     $target_real = $target

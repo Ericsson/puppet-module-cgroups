@@ -1,20 +1,8 @@
 require 'spec_helper'
 
-describe 'cgroups::group' do
-  let (:title) { 'test' }
-  context 'when declared before the cgroups class' do
-    it 'should fail' do
-      should raise_error(Puppet::Error,/Must include cgroups module before declaring cgroups::group resources/)
-    end
-  end
-end
 
 describe 'cgroups::group' do
   
-  let :pre_condition do
-    'class { "cgroups": }'
-  end
-
   let (:title) { 'user_mgw-all' }
   let(:facts) do
     { :osfamily                  => 'RedHat',
