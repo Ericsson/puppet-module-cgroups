@@ -1,0 +1,41 @@
+# This file is being maintained by Puppet.
+# DO NOT EDIT
+<% unless @mounts.empty? -%>
+
+mount {
+<%   @mounts.sort.each do |p,v| -%>
+  <%= p %> = <%= v %>;
+<%   end -%>
+}
+<% end -%>
+<% unless @cgconfig_content.nil? -%>
+
+<%= @cgconfig_content %>
+<% end -%>
+
+
+<% @groups.sort.each do |groupname,grouphash| -%>
+group <%= groupname %> {
+<%   unless grouphash['permissions'].nil? -%>
+
+  perm {
+<%     grouphash['permissions'].sort.each do |type, params| -%>
+    <%= type %>  {
+<%       params.sort.each do |p,v| -%>
+      <%= p %> = <%= v %>;
+<%       end -%>
+    }
+<%     end  -%>
+  }
+<%   end -%>
+<%   grouphash['controllers'].sort.each do |controller, params| -%>
+
+  <%= controller %> {
+<%     params.sort.each do |p,v| -%>
+    <%= p %> = <%= v %>;
+<%     end -%>
+  }
+<%   end -%>
+
+}
+<% end -%>
