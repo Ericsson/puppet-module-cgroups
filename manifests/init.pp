@@ -16,8 +16,14 @@ class cgroups (
   case $::osfamily {
     'RedHat': {
       case $::operatingsystemmajrelease {
-        '6','7': {
+        '6': {
           $package_name_default = 'libcgroup'
+        }
+        '7': {
+          $package_name_default = [
+            'libcgroup',
+            'libcgroup-tools',
+          ]
         }
         default: {
           fail('cgroups is only supported on EL 6 and 7.')
