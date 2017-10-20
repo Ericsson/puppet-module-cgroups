@@ -10,6 +10,9 @@ class cgroups (
   $user_path_fix    = undef,
   $mounts           = {},
   $groups           = {},
+  $cpu_limit        = undef,
+  $memory_limit     = undef,
+  $ubuntu_group_path = '/etc/cgconfig.conf',
 ) {
 
   # variables preparation
@@ -31,6 +34,20 @@ class cgroups (
         }
         default: {
           fail('cgroups is only supported on Suse 11 with SP2 and up.')
+        }
+      }
+    }
+    'Debian': {
+      case $::operatingsystemmajrelease {
+        '14.04','16.04': {
+          $package_name_default = [
+          'libcgroup1',
+          'cgroup-bin',
+          'cgroup-lite',
+          ]
+        }
+        default: {
+          fail('cgroups is only supported on Ubuntu 14.04 and 16.04.')
         }
       }
     }
@@ -71,17 +88,21 @@ class cgroups (
     ensure => present,
   }
 
-  file { $config_file_path:
-    ensure  => file,
-    notify  => Service[$service_name],
-    content => template('cgroups/cgroup.conf.erb'),
-    require => Package[$package_name_real],
+  if ($::osfamily != 'Debian') {
+    file { $config_file_path:
+      ensure  => file,
+      notify  => Service[$service_name],
+      content => template('cgroups/cgroup.conf.erb'),
+      require => Package[$package_name_real],
+    }
   }
 
-  service { $service_name:
-    ensure  => running,
-    enable  => true,
-    require => Package[$package_name_real],
+  if ($::osfamily != 'Debian') {
+    service { $service_name:
+      ensure  => running,
+      enable  => true,
+      require => Package[$package_name_real],
+    }
   }
 
   create_resources('cgroups::group', $groups)
@@ -92,6 +113,16 @@ class cgroups (
       path    => $user_path_fix,
       mode    => '0775',
       require => Service[$service_name],
+    }
+  }
+
+  if ($::osfamily == 'Debian') {
+    file { $ubuntu_group_path:
+      ensure => file,
+      content => epp('cgroups/Ubuntu/cgconfig.conf.epp', {
+        cpu_limit    => $cpu_limit,
+        memory_limit => $memory_limit,
+      }),
     }
   }
 }

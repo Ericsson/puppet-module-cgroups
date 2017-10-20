@@ -1,10 +1,13 @@
 require 'spec_helper'
 describe 'cgroups' do
+  ['Debian', 'RedHat'].each do |osfamily|
+    ['7.1', '14.04', '16.04'].each do |operatingsystemrelease|
+      ['7', '14.04', '16.04'].each do |operatingsystemmajrelease|
   let(:facts) do
     {
-      :operatingsystemmajrelease => '7',
-      :operatingsystemrelease    => '7.2',
-      :osfamily                  => 'RedHat',
+      :operatingsystemmajrelease => operatingsystemmajrelease,
+      :operatingsystemrelease    => operatingsystemrelease,
+      :osfamily                  => osfamily,
     }
   end
 
@@ -19,6 +22,12 @@ describe 'cgroups' do
       :operatingsystemmajrelease => nil, # not available on Suse
       :operatingsystemrelease    => '11.2',
       :osfamily                  => 'Suse',
+      :package_name              => 'libcgroup1',
+    },
+    'Ubuntu' => {
+      :operatingsystemmajrelease => '14.04'
+      :operatingsystemrelease    => '14.04',
+      :osfamily                  => 'Debian',
       :package_name              => 'libcgroup1',
     },
   }

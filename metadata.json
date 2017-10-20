@@ -27,6 +27,13 @@
       "operatingsystemrelease": [
         "11 SP2"
       ]
+    },
+    {
+      "operatingsystem": "Ubuntu",
+      "operatingsystemrelease": [
+        "14.04",
+        "16.04"
+      ]
     }
   ],
   "requirements": [

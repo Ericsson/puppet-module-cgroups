@@ -1,11 +1,14 @@
 require 'spec_helper'
 describe 'cgroups::group' do
   let(:title) { 'rspec/test' }
+  ['Debian', 'RedHat'].each do |osfamily|
+    ['7.1', '14.04', '16.04'].each do |operatingsystemrelease|
+      ['7', '14.04', '16.04'].each do |operatingsystemmajrelease|
   let(:facts) do
     {
-      :osfamily                  => 'RedHat',
-      :operatingsystemrelease    => '7.1',
-      :operatingsystemmajrelease => '7',
+      :osfamily                  => osfamily,
+      :operatingsystemrelease    => operatingsystemrelease,
+      :operatingsystemmajrelease => operatingsystemmajrelease,
     }
   end
   context 'with defaults for all parameters' do
