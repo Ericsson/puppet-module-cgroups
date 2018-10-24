@@ -1,0 +1,21 @@
+# This file is being maintained by Puppet.
+# DO NOT EDIT
+
+group limitgroup {
+  perm {
+    admin {
+      uid = root;
+      gid = root;
+    }
+    task {
+      uid = 500;
+      gid = 500;
+    }
+  }
+  cpu {
+    cpu.shares = "<%= $cpu_limit %>";
+  }
+  memory {
+    memory.limit_in_bytes = "<%= $memory_limit %>";
+  }
+}
