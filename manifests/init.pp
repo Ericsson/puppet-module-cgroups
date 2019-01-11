@@ -3,13 +3,14 @@
 # Manage cgroups configuration service and files.
 #
 class cgroups (
-  $config_file_path = '/etc/cgconfig.conf',
-  $service_name     = 'cgconfig',
-  $package_name     = undef,
-  $cgconfig_content = undef,
-  $user_path_fix    = undef,
-  $mounts           = {},
-  $groups           = {},
+  $config_file_path      = '/etc/cgconfig.conf',
+  $service_name          = 'cgconfig',
+  $package_name          = undef,
+  $cgconfig_content      = undef,
+  $user_path_fix         = undef,
+  $create_default_cgroup = 'no',
+  $mounts                = {},
+  $groups                = {},
 ) {
 
   # variables preparation
@@ -26,7 +27,7 @@ class cgroups (
     }
     'Suse': {
       case $::operatingsystemrelease {
-        /11\.[2-9]/: {
+        /12|11\.[2-9]/: {
           $package_name_default = 'libcgroup1'
         }
         default: {
@@ -63,6 +64,10 @@ class cgroups (
     validate_absolute_path($user_path_fix)
   }
 
+  if is_string($create_default_cgroup) == false {
+    fail('cgroups::create_default_cgroup is not a string.')
+  }
+
   validate_hash($mounts)
   validate_hash($groups)
 
@@ -71,10 +76,19 @@ class cgroups (
     ensure => present,
   }
 
+  # Suse 12 does not support /etc/cgconfig.d
+  if (($::osfamily == 'Suse') and (scanf("${::operatingsystemmajrelease}", "%i")[0] >= 12)) {
+      $config_file_template = 'cgroups/cgroup.conf-Suse.erb'
+  }
+  else {
+      $config_file_template = 'cgroups/cgroup.conf.erb'
+      create_resources('cgroups::group', $groups)
+  }
+
   file { $config_file_path:
     ensure  => file,
     notify  => Service[$service_name],
-    content => template('cgroups/cgroup.conf.erb'),
+    content => template($config_file_template),
     require => Package[$package_name_real],
   }
 
@@ -84,7 +98,18 @@ class cgroups (
     require => Package[$package_name_real],
   }
 
-  create_resources('cgroups::group', $groups)
+  # Suse 12 - do we create the sysdefault/ default cgroup? No by default
+  if ($::osfamily == 'Suse') {
+    file { '/etc/sysconfig/cgconfig':
+      ensure  => file,
+      owner   => root,
+      group   => root,
+      mode    => '0644',
+      content => "CREATE_DEFAULT=$create_default_cgroup\n",
+      notify  => Service[$service_name],
+      require => Package[$package_name_real],
+    }
+  }
 
   if ($user_path_fix != undef) and ($::osfamily == 'Suse') {
     file { 'cgroups_path_fix':

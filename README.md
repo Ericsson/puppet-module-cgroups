@@ -3,7 +3,7 @@
 Manage cgroups configuration service and files.
 
 - /etc/cgconfig.conf
-- /etc/cgconfig.d/*.conf
+- /etc/cgconfig.d/*.conf (EL only)
 
 # Compatibility
 
@@ -15,6 +15,7 @@ using Ruby versions 1.8.7 (Puppet v3 only), 1.9.3, 2.0.0, 2.1.0 and 2.3.1.
   * EL 7
   * SLED 11 SP2
   * SLES 11 SP2
+  * SLES 12 SP1
 
 [![Build Status](https://travis-ci.org/Ericsson/puppet-module-cgroups.png?branch=master)](https://travis-ci.org/Ericsson/puppet-module-cgroups)
 
@@ -107,6 +108,12 @@ Name of service to manage.
 Absolute path to set 0775 permissions on when defined. This is a fix for Suse that have a bug in setting this though the config file. Only available on Suse.
 
 - *Default*: undef
+
+---
+#### create_default_cgroup (string)
+Suse 12 will create a default cgroup called 'sysdefault'. Disable this by default. Set to 'yes' if you really want it. Only available on Suse.
+
+- *Default*: 'no'
 
 ---
 
