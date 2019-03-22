@@ -3,13 +3,18 @@
 # Manage cgroups configuration service and files.
 #
 class cgroups (
-  $config_file_path = '/etc/cgconfig.conf',
-  $service_name     = 'cgconfig',
-  $package_name     = undef,
-  $cgconfig_content = undef,
-  $user_path_fix    = undef,
-  $mounts           = {},
-  $groups           = {},
+  $config_file_path     = '/etc/cgconfig.conf',
+  $rules_file_path      = '/etc/cgrules.conf',
+  $service_name         = 'cgconfig',
+  $rules_service_name   = 'cgred',
+  $rules_service_enable = false,
+  $rules_service_ensure = 'stopped',
+  $package_name         = undef,
+  $cgconfig_content     = undef,
+  $user_path_fix        = undef,
+  $mounts               = {},
+  $groups               = {},
+  $rules                = {},
 ) {
 
   # variables preparation
@@ -51,6 +56,10 @@ class cgroups (
     fail('cgroups::service_name is not a string.')
   }
 
+  if is_string($rules_service_name) == false {
+    fail('cgroups::rules_service_name is not a string.')
+  }
+
   if is_string($package_name_real) == false and is_array($package_name_real) == false {
     fail('cgroups::package_name is not a string or an array.')
   }
@@ -65,6 +74,7 @@ class cgroups (
 
   validate_hash($mounts)
   validate_hash($groups)
+  validate_hash($rules)
 
   # functionality
   package { $package_name_real:
@@ -73,14 +83,33 @@ class cgroups (
 
   file { $config_file_path:
     ensure  => file,
-    notify  => Service[$service_name],
+    notify  => [
+      Service[$service_name],
+      Service[$rules_service_name],
+    ],
     content => template('cgroups/cgroup.conf.erb'),
+    require => Package[$package_name_real],
+  }
+
+  file { $rules_file_path:
+    ensure  => file,
+    notify  => [
+      Service[$service_name],
+      Service[$rules_service_name],
+    ],
+    content => template('cgroups/cgrules.conf.erb'),
     require => Package[$package_name_real],
   }
 
   service { $service_name:
     ensure  => running,
     enable  => true,
+    require => Package[$package_name_real],
+  }
+
+  service { $rules_service_name:
+    ensure  => $rules_service_ensure,
+    enable  => $rules_service_enable,
     require => Package[$package_name_real],
   }
 
@@ -91,7 +120,10 @@ class cgroups (
       ensure  => directory,
       path    => $user_path_fix,
       mode    => '0775',
-      require => Service[$service_name],
+      require => [
+        Service[$service_name],
+        Service[$rules_service_name],
+      ],
     }
   }
 }

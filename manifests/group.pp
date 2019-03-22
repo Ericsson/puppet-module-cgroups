@@ -23,6 +23,9 @@ define cgroups::group (
   file { $target:
     ensure  => file,
     content => template('cgroups/group.conf.erb'),
-    notify  => Service[$cgroups::service_name],
+    notify  => [
+      Service[$cgroups::service_name],
+      Service[$cgroups::rules_service_name],
+    ],
   }
 }

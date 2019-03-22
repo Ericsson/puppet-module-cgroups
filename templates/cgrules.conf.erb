@@ -1,0 +1,9 @@
+# This file is being maintained by Puppet.
+# DO NOT EDIT
+<% unless @rules.empty? -%>
+<%   if @rules.is_a?(Hash) -%>
+<%     @rules.sort.each do |user,settings| -%>
+<%= user %><%= 0x09.chr %><%= settings['controllers'] %><%= 0x09.chr %><%= settings['destination'] %>
+<%     end -%>
+<%   end -%>
+<% end -%>

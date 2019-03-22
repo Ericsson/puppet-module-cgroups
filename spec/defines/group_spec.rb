@@ -22,7 +22,7 @@ describe 'cgroups::group' do
     it do
       should contain_file('/etc/cgconfig.d/rspec-test.conf').with({
         'ensure'  => 'file',
-        'notify'  => 'Service[cgconfig]',
+        'notify'  => ['Service[cgconfig]', 'Service[cgred]'],
         'content' => content,
       })
     end
@@ -79,7 +79,7 @@ describe 'cgroups::group' do
     it do
       should contain_file('/specific/path/rspec-test.conf').with({
         'ensure'  => 'file',
-        'notify'  => 'Service[cgconfig]',
+        'notify'  => ['Service[cgconfig]', 'Service[cgred]'],
         'content' => content,
       })
     end

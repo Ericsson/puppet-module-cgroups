@@ -37,7 +37,16 @@ describe 'cgroups' do
     it do
       should contain_file('/etc/cgconfig.conf').with({
         'ensure'  => 'file',
-        'notify'  => 'Service[cgconfig]',
+        'notify'  => ['Service[cgconfig]', 'Service[cgred]'],
+        'require' => 'Package[libcgroup]',
+        'content' => content,
+      })
+    end
+
+    it do
+      should contain_file('/etc/cgrules.conf').with({
+        'ensure'  => 'file',
+        'notify'  => ['Service[cgconfig]', 'Service[cgred]'],
         'require' => 'Package[libcgroup]',
         'content' => content,
       })
@@ -50,10 +59,24 @@ describe 'cgroups' do
         'require' => 'Package[libcgroup]',
       })
     end
+
+    it do
+      should contain_service('cgred').with({
+        'ensure'  => 'stopped',
+        'enable'  => 'false',
+        'require' => 'Package[libcgroup]',
+      })
+    end
   end
 
   describe 'with config_file_path set to valid string </specific/path>' do
     let(:params) { { :config_file_path => '/specific/path' } }
+
+    it { should contain_file('/specific/path') }
+  end
+
+  describe 'with rules_file_path set to valid string </specific/path>' do
+    let(:params) { { :rules_file_path => '/specific/path' } }
 
     it { should contain_file('/specific/path') }
   end
@@ -73,9 +96,48 @@ describe 'cgroups' do
       }
     end
 
-    it { should contain_file('cgroups_path_fix').with_require('Service[other_name]') }
-    it { should contain_file('/etc/cgconfig.conf').with_notify('Service[other_name]') }
+    it { should contain_file('cgroups_path_fix').with_require(['Service[other_name]', 'Service[cgred]']) }
+    it { should contain_file('/etc/cgconfig.conf').with_notify(['Service[other_name]', 'Service[cgred]']) }
     it { should contain_service('other_name') }
+  end
+
+  describe 'with rules_service_name set to valid string <rules_other_name>' do
+    let(:facts) do
+      {
+        :operatingsystemrelease => '11.2',
+        :osfamily               => 'Suse',
+      }
+    end
+    let(:params) do
+      {
+        :rules_service_name  => 'rules_other_name',
+        :user_path_fix => '/specific/path',
+      }
+    end
+
+    it { should contain_file('cgroups_path_fix').with_require(['Service[cgconfig]', 'Service[rules_other_name]']) }
+    it { should contain_file('/etc/cgconfig.conf').with_notify(['Service[cgconfig]', 'Service[rules_other_name]']) }
+    it { should contain_service('rules_other_name') }
+  end
+
+  describe 'with rules service enabled and running' do
+    let(:facts) do
+      {
+        :operatingsystemrelease => '11.2',
+        :osfamily               => 'Suse',
+      }
+    end
+    let(:params) do
+      {
+        :rules_service_enable  => true,
+        :rules_service_ensure => 'running',
+      }
+    end
+
+    it { should contain_service('cgred').with({
+      'ensure'  => 'running',
+      'enable'  => 'true',
+    })}
   end
 
   platforms.sort.each do |platform, v|
@@ -138,7 +200,7 @@ describe 'cgroups' do
     end
     let(:params) { { :user_path_fix => '/specific/path' } }
 
-    it { should contain_file('cgroups_path_fix').with_require('Service[cgconfig]') }
+    it { should contain_file('cgroups_path_fix').with_require(['Service[cgconfig]', 'Service[cgred]']) }
   end
 
   describe 'with mounts set to valid hash { spec => /test, cpu => /cgroups }' do
@@ -223,6 +285,31 @@ describe 'cgroups' do
         },
       })
     end
+  end
+
+  describe 'with rules set to valid hash' do
+    let(:params) {{
+      :rules => {
+        '@template1' => {
+          'controllers' => 'cpu,cpuacct,memory',
+          'destination' => 'template1/%u',
+        },
+        '@template2' => {
+          'controllers' => 'cpu,cpuacct,memory',
+          'destination' => 'template2/%u',
+        }
+      }
+    }}
+
+    # test includes alphabetical sorting of values in the template
+    content = <<-END.gsub(/^\s+\|/, '')
+      |# This file is being maintained by Puppet.
+      |# DO NOT EDIT
+      |@template1\tcpu,cpuacct,memory\ttemplate1/%u
+      |@template2\tcpu,cpuacct,memory\ttemplate2/%u
+    END
+
+    it { should contain_file('/etc/cgrules.conf').with_content(content) }
   end
 
   %w(5 8).each do |release|
